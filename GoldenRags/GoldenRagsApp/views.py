@@ -1,30 +1,20 @@
 from django.shortcuts import render
-
-# Create your views here.
-
-
-# Author: Aljosa Janjic
-# Date: 2023-04
-# Version: 1.0.5
-
-import json
-import time
-from bs4 import BeautifulSoup
+from .forms import ScrapeForm
 from selenium import webdriver
+import time, json, random
+from bs4 import BeautifulSoup
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 import re
 from twilio.rest import Client
-from lxml import html
-from urllib.parse import urlparse, parse_qs
 import random
 
 
 
 
-def get_driver(url):
+def get_driver(product_url):
   # Set options to make browsing easier
   options = webdriver.ChromeOptions()
   options.add_argument("disable-infobars")
@@ -34,17 +24,20 @@ def get_driver(url):
   options.add_experimental_option("excludeSwitches", ["enable-automation"])
   options.add_argument("disable-blink-features=AutomationControlled")
   driver = webdriver.Chrome(options=options)
-  driver.get(f"{url}")
+  driver.get(f"{product_url}")
   return driver
 
 
-def get_krpu(url, itemColor='', itemSize='', buy='', sms=''):
+def get_krpu(product_url, item_color='', item_size='', send_sms=''):
 
+  attempt = 1
+  found = False
+  info = ''
   # if itemSize != 'X':
   #     buy = input('Zelis li da proizvod bude kupljen "da/ne"?: ').lower()
 
   print('Looking for Krpa')
-  driver = get_drvier(url)
+  driver = get_driver(product_url)
 
   content = driver.page_source
 
@@ -57,8 +50,8 @@ def get_krpu(url, itemColor='', itemSize='', buy='', sms=''):
 
   # Extract the relevant information
 
-  first_name_index = content.find(f'"name":"{itemColor}","reference"')
-  last_name_index = first_name_index + len('"name": ') + len(itemColor)
+  first_name_index = content.find(f'"name":"{item_color}","reference"')
+  last_name_index = first_name_index + len('"name": ') + len(item_color)
 
   first_object_index = content.find('"sizes":[{', first_name_index)
   last_object_index = content.find('],"description"', first_object_index)
@@ -73,24 +66,25 @@ def get_krpu(url, itemColor='', itemSize='', buy='', sms=''):
 
   # Print the result
   for size in result['sizes']:
-    if size['name'] == itemSize:
+    if size['name'] == item_size:
       if size['availability'] != 'in_stock':
-        global atempt
-        print(f'Not available {atempt}')
+         
+        print(f'Not available {attempt}')
         time.sleep(random.randint(30, 60))
       else:
-        send_email(url, itemColor, itemSize, sms)
+        print('Item found')
         time.sleep(2)
+        send_email(product_url, item_color, item_size, send_sms)
         # if buy == 'YES':
-        #   buy_product(driver, soup, itemSize, itemColor)
-  if itemSize == 'X':
+        #   buy_product(driver, soup, item_size, item_color)
+  if item_size == 'X':
     print(result)
 
 
 def send_email(url, itemColor, itemSize, sms):
 
   sender = os.getenv('GOLDEN_MAIL')
-  # Add variable for  reciver email address
+  # Add variable for  receiver email address
   receiver = os.getenv('RECEIVER_MAIL')
   password = os.getenv('GOLDEN_PASSWORD')
 
@@ -138,60 +132,26 @@ def send_sms(itemColor, itemSize, product_name, url):
   message = client.messages \
                   .create(
                        body=f"""
-                       {itemColor} {product_name} Size: {itemSize} is now avaiable. Buy it now on: {url}
+                       {itemColor} {product_name} Size: {itemSize} is now available. Buy it now on: {url}
                        """,
                        from_= os.getenv('TWILIO_NUMBER'),
-                       to= os.getenv('RECIVER_NUMBER')
+                       to= os.getenv('RECEIVER_NUMBER')
                    )
 
   print(message.sid)
 
 
-headers = {
-  "User-Agent":
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36"
-}
-
-# def buy_product(driver, soup, itemSize, itemColor):
-#   # Close first cookies
-
-#   driver.find_element(by='id', value='onetrust-close-btn-container').click()
-
-#   # Continue in Slovakia
-#   driver.find_element(
-#     by='xpath',
-#     value=
-#     '/html/body/div[1]/div[1]/div[2]/div[2]/div/div/div/div[2]/section[1]/button[1]'
-#   ).click()
-
-#   page_content = driver.page_source
-
-#   # Parse the page content as an HTML tree
-#   tree = html.fromstring(page_content)
-
-#   # List of colors and select color
-#   colors_available = tree.xpath(
-#     '//div[@class="product-detail-color-selector__color-area"]//span[@class="screen-reader-text"]'
-#   )
-#   for index, element in enumerate(colors_available):
-#     value = f'//*[@id="main"]/article/div[2]/div[1]/div[2]/div[1]/div[4]/div/ul/li[{index + 1}]/button/div[1]'
-#     if itemColor == element.text:
-#       driver.find_element(by='xpath', value=value).click()
-
-#   time.sleep(2)
-#   # List of sizes and select size
-#   sizes = tree.xpath('//span[@class="product-size-info__main-label"]')
-
-#   for index, size in enumerate(sizes):
-#     value = f'//*[@id="product-size-selector-{v1_param}-item-{index}"]/div/div/span'
-#     if itemSize == size.text:
-#       driver.find_element(by='xpath', value=value).click()
-
-#   time.sleep(3)
-#   # Add to cart
-#   driver.find_element(
-#     by='xpath',
-#     value='//*[@id="main"]/article/div[2]/div[1]/div[2]/div[1]/div[6]/button'
-#   ).click()
-
-#   time.sleep(3)
+def scrape_view(request):
+    if request.method == 'POST':
+        form = ScrapeForm(request.POST)
+        if form.is_valid():
+            product_url = form.cleaned_data['product_url']
+            item_color = form.cleaned_data['item_color']
+            item_size = form.cleaned_data['item_size'].upper()
+            send_sms = form.cleaned_data['send_sms']
+        
+            get_krpu(product_url, item_color, item_size, send_sms)
+            pass
+    else:
+        form = ScrapeForm()
+    return render(request, 'GoldenRagsApp/index.html', {'form': form})

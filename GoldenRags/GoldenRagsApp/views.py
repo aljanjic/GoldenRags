@@ -109,6 +109,7 @@ def send_email(url, itemColor, itemSize, sms):
   message.attach(mimetext)
 
   server = smtplib.SMTP('smtp.office365.com', 587)
+  server.ehlo()
   server.starttls()
   server.login(sender, password)
   message_text = message.as_string()

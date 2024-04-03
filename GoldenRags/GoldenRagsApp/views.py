@@ -30,11 +30,8 @@ def get_driver(product_url):
 
 def get_rags(product_url, item_color='', item_size='', send_sms='', phone_number = '', receivers_email = '', product_name = ''):
 
-  attempt = 1
-  found = False
-  info = ''
-  # if item_size != 'X':
-  #     buy = input('Zelis li da proizvod bude kupljen "da/ne"?: ').lower()
+
+
 
   print('Looking for Krpa')
   driver = get_driver(product_url)
@@ -78,8 +75,10 @@ def get_rags(product_url, item_color='', item_size='', send_sms='', phone_number
         if send_sms == True:
             print('Bupi-bupi I send SMS but you need to remove comment from the code')
             #sms_notification(product_url, item_color, item_size, phone_number, product_name)
+            global found
+            found = True
   if item_size == 'X':
-    print(result)
+    print(result['sizes'])
 
 
 def email_notification(product_url, item_color, item_size, receivers_email, product_name):
@@ -152,7 +151,14 @@ def scrape_view(request):
             if match:
                 product_name = match.group(1).replace("-", " ").upper()
 
-            get_rags(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
+            global attempt
+            attempt = 1
+            global found
+            found = False
+            info = ''
+            while found == False:
+                get_rags(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
+                attempt += 1
             pass
     else:
         form = ScrapeForm()

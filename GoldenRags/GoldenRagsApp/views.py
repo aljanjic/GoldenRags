@@ -28,12 +28,12 @@ def get_driver(product_url):
   return driver
 
 
-def get_krpu(product_url, item_color='', item_size='', send_sms=''):
+def get_rags(product_url, item_color='', item_size='', send_sms='', phone_number = '', receivers_email = '', product_name = ''):
 
   attempt = 1
   found = False
   info = ''
-  # if itemSize != 'X':
+  # if item_size != 'X':
   #     buy = input('Zelis li da proizvod bude kupljen "da/ne"?: ').lower()
 
   print('Looking for Krpa')
@@ -74,36 +74,32 @@ def get_krpu(product_url, item_color='', item_size='', send_sms=''):
       else:
         print('Item found')
         time.sleep(2)
-        send_email(product_url, item_color, item_size, send_sms)
-        # if buy == 'YES':
-        #   buy_product(driver, soup, item_size, item_color)
+        email_notification(product_url, item_color, item_size, receivers_email, product_name)
+        if send_sms == True:
+            print('Bupi-bupi I send SMS but you need to remove comment from the code')
+            #sms_notification(product_url, item_color, item_size, phone_number, product_name)
   if item_size == 'X':
     print(result)
 
 
-def send_email(url, itemColor, itemSize, sms):
+def email_notification(product_url, item_color, item_size, receivers_email, product_name):
 
   sender = os.getenv('GOLDEN_MAIL')
-  # Add variable for  receiver email address
+  #receiver = receivers_email
   receiver = os.getenv('RECEIVER_MAIL')
   password = os.getenv('GOLDEN_PASSWORD')
-
-  product_name = ''
-  match = re.search(r"/([^/]+)-p\d+\.html", url)
-  if match:
-    product_name = match.group(1).replace("-", " ").upper()
 
   message = MIMEMultipart()
   message['From'] = sender
   message['To'] = receiver
   message[
-    'Subject'] = f'{itemColor} {product_name} is available. Size: {itemSize}'
+    'Subject'] = f'{item_color} {product_name} is available. Size: {item_size}'
 
   body = f"""
-    <h2>{itemColor} {product_name} is available. Size: {itemSize}</h2>
+    <h2>{item_color} {product_name} is available. Size: {item_size}</h2>
     
-    {product_name} je na stanju
-    <a href={url}'> Kupi odmah! </a>
+    {product_name} is available
+    <a href={product_url}'> Buy now! </a>
     """
   mimetext = MIMEText(body, 'html')
   message.attach(mimetext)
@@ -120,12 +116,9 @@ def send_email(url, itemColor, itemSize, sms):
   print('Mail sent')
   global found
   found = True
-  if sms == 'YES':
-    print('Bupi-bupi I send SMS but you need to remove comment from the code')
-    #send_sms(itemColor, itemSize, product_name, url)
 
 
-def send_sms(itemColor, itemSize, product_name, url):
+def sms_notification(product_url, item_color, item_size, phone_number, product_name):
   account_sid = os.environ['TWILIO_ACCOUNT_SID']
   auth_token = os.environ['TWILIO_AUTH_TOKEN']
   client = Client(account_sid, auth_token)
@@ -133,10 +126,11 @@ def send_sms(itemColor, itemSize, product_name, url):
   message = client.messages \
                   .create(
                        body=f"""
-                       {itemColor} {product_name} Size: {itemSize} is now available. Buy it now on: {url}
+                       {item_color} {product_name} Size: {item_size} is now available. Buy it now on: {product_url}
                        """,
                        from_= os.getenv('TWILIO_NUMBER'),
-                       to= os.getenv('RECEIVER_NUMBER')
+                       to = phone_number
+                       #to= os.getenv('RECEIVER_NUMBER')
                    )
 
   print(message.sid)
@@ -147,11 +141,18 @@ def scrape_view(request):
         form = ScrapeForm(request.POST)
         if form.is_valid():
             product_url = form.cleaned_data['product_url']
-            item_color = form.cleaned_data['item_color']
+            item_color = form.cleaned_data['item_color'].strip()
             item_size = form.cleaned_data['item_size'].upper()
-            send_sms = form.cleaned_data['send_sms']
-        
-            get_krpu(product_url, item_color, item_size, send_sms)
+            send_sms = form.cleaned_data['send_sms']       
+            phone_number = form.cleaned_data['phone_number']
+            receivers_email = form.cleaned_data['receivers_email']
+
+            product_name = ''
+            match = re.search(r"/([^/]+)-p\d+\.html", product_url)
+            if match:
+                product_name = match.group(1).replace("-", " ").upper()
+
+            get_rags(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
             pass
     else:
         form = ScrapeForm()

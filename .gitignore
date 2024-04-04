@@ -1,6 +1,6 @@
 .env
 .env.db
-dostupnost.txt
+dostupnost*
 # Compiled output
 /dist
 /tmp

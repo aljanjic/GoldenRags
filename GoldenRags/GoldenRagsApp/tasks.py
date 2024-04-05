@@ -12,6 +12,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from twilio.rest import Client
+from celery.exceptions import Retry
 
 
 def get_driver(product_url):
@@ -28,7 +29,7 @@ def get_driver(product_url):
     return driver
 
 
-@shared_task(bind=True, max_retries=100, default_retry_delay=20)
+@shared_task(bind=True, max_retries=3, default_retry_delay=100)
 def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name):
     try:
         print('Looking for Krpa')
@@ -79,6 +80,9 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
         if not item_found:
             print("Item not found, will retry...11111111111111111")
             self.retry()
+    except Retry as retry_exc:
+        print('Scheduling retry...')
+        raise retry_exc
     except Exception as exc:
         print('Task failed failed failed failed', traceback.format_exc())
 

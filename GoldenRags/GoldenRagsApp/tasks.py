@@ -29,7 +29,7 @@ def get_driver(product_url):
     return driver
 
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=100)
+@shared_task(bind=True, max_retries=6048, default_retry_delay=100)
 def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name):
     try:
         print('Looking for Krpa')

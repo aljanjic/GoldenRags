@@ -20,6 +20,6 @@ from GoldenRagsApp import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('godlenrags/admin/', admin.site.urls),
     path('', include('GoldenRagsApp.urls')), 
 ]

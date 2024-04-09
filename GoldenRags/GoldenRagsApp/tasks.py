@@ -16,7 +16,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from decouple import config
-# from pyvirtualdisplay import Display
+from pyvirtualdisplay import Display # Needed for running on server
 
 
 def get_driver(product_url):
@@ -34,7 +34,6 @@ def get_driver(product_url):
     chrome_options.add_argument(f'user-agent={user_agent}')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
    
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -48,8 +47,8 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
     try:
         print('Looking for Krpa')
         
-        # display = Display(visible=0, size=(800, 600))
-        # display.start()
+        display = Display(visible=0, size=(800, 600)) # Needed for running on server
+        display.start() # Needed for running on server
 
         driver = get_driver(product_url)
 
@@ -79,7 +78,7 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
         result['sizes'] = json.loads(sizes)
 
         item_found = False
-        # display.stop()
+        display.stop() # Needed for running on server
         driver.quit()
         # Print the result
         for size in result['sizes']:

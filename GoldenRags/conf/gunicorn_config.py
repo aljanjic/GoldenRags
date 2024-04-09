@@ -1,4 +1,4 @@
-import os
+from decouple import config
 
-bind=os.environ.get('BIND')
-workers=os.environ.get('WORKERS')
+bind=config('BIND')
+workers=config('WORKERS')

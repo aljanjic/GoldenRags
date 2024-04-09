@@ -29,6 +29,8 @@ PyJWT==2.8.0
 PySocks==1.7.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
+python-dotenv==1.0.1
+PyVirtualDisplay==3.0
 redis==5.0.3
 requests==2.31.0
 selenium==4.19.0
@@ -45,5 +47,6 @@ tzdata==2024.1
 urllib3==2.2.1
 vine==5.1.0
 wcwidth==0.2.13
+webdriver-manager==4.0.1
 wsproto==1.2.0
 yarl==1.9.4

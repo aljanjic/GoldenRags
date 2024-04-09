@@ -1,30 +1,32 @@
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError
+from celery.exceptions import Retry
+import os
 import traceback
-import time
 import json
 import random
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from bs4 import BeautifulSoup
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
 from twilio.rest import Client
-from celery.exceptions import Retry
+import time
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def get_driver(product_url):
     # Set options to make browsing easier
-    options = webdriver.ChromeOptions()
-    options.add_argument("disable-infobars")
-    options.add_argument("start-maximized")
-    options.add_argument("disable-dev-shm-usage")
-    options.add_argument("no-sandbox")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_argument("disable-blink-features=AutomationControlled")
-    driver = webdriver.Chrome(options=options)
+
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+   
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
     driver.get(f"{product_url}")
     return driver
 

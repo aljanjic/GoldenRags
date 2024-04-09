@@ -21,6 +21,12 @@ from pyvirtualdisplay import Display
 def get_driver(product_url):
     # Set options to make browsing easier
     chrome_options = Options()
+
+    chrome_options.add_argument("disable-infobars")
+    chrome_options.add_argument("start-maximized")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_argument("disable-blink-features=AutomationControlled")
+
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
@@ -38,6 +44,7 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
         
         display = Display(visible=0, size=(800, 600))
         display.start()
+
         driver = get_driver(product_url)
 
         content = driver.page_source

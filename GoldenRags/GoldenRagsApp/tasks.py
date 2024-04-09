@@ -109,8 +109,8 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
 def email_notification(product_url, item_color, item_size, receivers_email, product_name):
 
     sender = config('GOLDEN_MAIL')
-    # receiver = receivers_email
-    receiver = config('RECEIVER_MAIL')
+    receiver = receivers_email
+    # receiver = config('RECEIVER_MAIL')
     password = config('GOLDEN_PASSWORD')
 
     message = MIMEMultipart()

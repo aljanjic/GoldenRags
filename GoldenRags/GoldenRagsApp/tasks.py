@@ -15,18 +15,24 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from pyvirtualdisplay import Display
+from decouple import config
+# from pyvirtualdisplay import Display
 
 
 def get_driver(product_url):
     # Set options to make browsing easier
     chrome_options = Options()
 
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
+    chrome_options.headless = True
+
     chrome_options.add_argument("disable-infobars")
     chrome_options.add_argument("start-maximized")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_argument("disable-blink-features=AutomationControlled")
 
+    chrome_options.add_argument(f'user-agent={user_agent}')
+    chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
@@ -42,8 +48,8 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
     try:
         print('Looking for Krpa')
         
-        display = Display(visible=0, size=(800, 600))
-        display.start()
+        # display = Display(visible=0, size=(800, 600))
+        # display.start()
 
         driver = get_driver(product_url)
 
@@ -73,7 +79,7 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
         result['sizes'] = json.loads(sizes)
 
         item_found = False
-        display.stop()
+        # display.stop()
         driver.quit()
         # Print the result
         for size in result['sizes']:
@@ -103,10 +109,10 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
 
 def email_notification(product_url, item_color, item_size, receivers_email, product_name):
 
-    sender = os.getenv('GOLDEN_MAIL')
+    sender = config('GOLDEN_MAIL')
     # receiver = receivers_email
-    receiver = os.getenv('RECEIVER_MAIL')
-    password = os.getenv('GOLDEN_PASSWORD')
+    receiver = config('RECEIVER_MAIL')
+    password = config('GOLDEN_PASSWORD')
 
     message = MIMEMultipart()
     message['From'] = sender
@@ -147,9 +153,9 @@ def sms_notification(product_url, item_color, item_size, phone_number, product_n
                         body=f"""
                        {item_color} {product_name} Size: {item_size} is now available. Buy it now on: {product_url}
                        """,
-                        from_=os.getenv('TWILIO_NUMBER'),
+                        from_=config('TWILIO_NUMBER'),
                         to=phone_number
-                        # to= os.getenv('RECEIVER_NUMBER')
+                        # to= config('RECEIVER_NUMBER')
                     )
 
     print(message.sid)

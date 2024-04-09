@@ -15,11 +15,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from pyvirtualdisplay import Display
 
 
 def get_driver(product_url):
     # Set options to make browsing easier
-
     chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--headless')
@@ -35,6 +35,9 @@ def get_driver(product_url):
 def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name):
     try:
         print('Looking for Krpa')
+        
+        display = Display(visible=0, size=(800, 600))
+        display.start()
         driver = get_driver(product_url)
 
         content = driver.page_source
@@ -63,7 +66,8 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
         result['sizes'] = json.loads(sizes)
 
         item_found = False
-
+        display.stop()
+        driver.quit()
         # Print the result
         for size in result['sizes']:
             if size['name'] == item_size:

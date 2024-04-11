@@ -40,15 +40,57 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.messages {
+    opacity: 0;
+    animation: fadeInOut 5s forwards;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
     </style>
 
 </head>
 <body>
     <h1>Product Scrape Request</h1>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Submit</button>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            setTimeout(() => {
+                const messages = document.querySelector('.messages');
+                if (messages) {
+                    messages.style.display = 'none';
+                }
+            }, 5000); // Match this to the CSS animation duration
+        });
+    </script>
+
 </body>
 </html>

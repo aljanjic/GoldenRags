@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .forms import ScrapeForm
 import re
 from .tasks import get_rags_async  
+from django.contrib import messages
 
 
 
@@ -29,9 +30,8 @@ def scrape_view(request):
             global found
             found = False
             info = ''
-            print('One line before function call')
-            result = get_rags_async.delay(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
-            print(result)
+            messages.success(request, 'Form has been submitted successfully.')
+            get_rags_async.delay(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
             pass
     else:
         form = ScrapeForm()

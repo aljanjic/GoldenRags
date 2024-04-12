@@ -55,7 +55,9 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
 
         soup = BeautifulSoup(content, 'html.parser')
 
-        with open(f'dostupnost{random.randint(1, 1060)}.txt', 'w+') as f:
+        filename = f'dostupnost{random.randint(1, 1060)}.txt'
+
+        with open(filename, 'w+') as f:
             f.write(str(soup))
             f.seek(0)
             content = f.read()
@@ -75,7 +77,7 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
 
         sizes = '[' + result['sizes'] + ']'
         result['sizes'] = json.loads(sizes)
-
+        os.remove(filename)
         item_found = False
         display.stop() # Needed for running on server
         driver.quit()

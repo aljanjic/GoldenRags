@@ -18,7 +18,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from decouple import config
 from pyvirtualdisplay import Display # Needed for running on server
 
-
 def get_driver(product_url):
     # Set options to make browsing easier
     chrome_options = Options()
@@ -90,9 +89,9 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
                     email_notification(product_url, item_color,
                                        item_size, receivers_email, product_name)
                     if send_sms:
-                        print(
-                            'Bupi-bupi I send SMS but you need to remove comment from the code')
-                        # sms_notification(product_url, item_color, item_size, phone_number, product_name)
+                        print('Bupi-bupi I send SMS but you need to remove comment from the code')
+                        whatsapp_notification(product_url, item_color, item_size, phone_number, product_name)
+                        #sms_notification(product_url, item_color, item_size, phone_number, product_name)
                     item_found = True
                     break
         if not item_found:
@@ -154,7 +153,18 @@ def sms_notification(product_url, item_color, item_size, phone_number, product_n
                        """,
                         from_=config('TWILIO_NUMBER'),
                         to=phone_number
-                        # to= config('RECEIVER_NUMBER')
+                        # to=config('RECEIVER_NUMBER')
                     )
 
-    print(message.sid)
+def whatsapp_notification(product_url, item_color, item_size, phone_number, product_name):
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    message = client.messages.create(
+        from_='whatsapp:+14155238886',
+        body=f"""
+            {item_color} {product_name} Size: {item_size} is now available. Buy it now on: {product_url}
+            """,
+        to=f'whatsapp:{phone_number}'
+        )

@@ -1,13 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import ScrapeForm
 import re
 from .tasks import get_rags_async  
 from django.contrib import messages
-
-
-
-
-
 
 def scrape_view(request):
     if request.method == 'POST':
@@ -25,14 +20,10 @@ def scrape_view(request):
             if match:
                 product_name = match.group(1).replace("-", " ").upper()
 
-            global attempt
-            attempt = 1
-            global found
-            found = False
-            info = ''
             messages.success(request, 'Form has been submitted successfully.')
             get_rags_async.delay(product_url, item_color, item_size, send_sms, phone_number, receivers_email, product_name)
-            pass
+            return redirect('scrape')
+            
     else:
         form = ScrapeForm()
     return render(request, 'GoldenRagsApp/index.html', {'form': form})

@@ -97,6 +97,8 @@ def get_rags_async(self, product_url, item_color, item_size, send_sms, phone_num
                     item_found = True
                     break
         if not item_found:
+            sleep_time = random.randint(1, 120)
+            time.sleep(sleep_time)
             print("Item not found, will retry...11111111111111111")
             self.retry()
     except Retry as retry_exc:
